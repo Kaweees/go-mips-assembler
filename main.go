@@ -32,14 +32,17 @@ func main() {
 	scanner := bufio.NewScanner(file)
 
 	for scanner.Scan() {
-		dfa.Reset()
-		for i, r := range scanner.Text() {
+		for _, r := range scanner.Text() {
 			dfa.Transition(r)
 			// fmt.Print(i, r)
-			fmt.Printf("Index: %d, Rune: %c\n", i, r)
+			// fmt.Printf("Index: %d, Rune: %c\n", i, r)
 			byteCount += 1
 		}
+		dfa.Store()
 		lineCount += 1
+	}
+	for _, token := range dfa.tokens {
+		fmt.Printf("Token Type: %s, Value: %s\n", token.tokenType, token.tokenValue)
 	}
 
 	if err := scanner.Err(); err != nil {
