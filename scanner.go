@@ -56,8 +56,10 @@ func (dfa *DFA) AddToken(tokenType string, tokenValue string) {
 
 // Store the current state of the DFA.
 func (dfa *DFA) Store() {
-	dfa.AddToken(dfa.state.String(), dfa.currentToken)
-	dfa.Reset()
+	if dfa.state != Initial {
+		dfa.AddToken(dfa.state.String(), dfa.currentToken)
+		dfa.Reset()
+	}
 }
 
 // Reset the DFA to its initial state.
@@ -85,10 +87,13 @@ func (dfa *DFA) Transition(input rune) {
 			dfa.currentToken = string(input)
 			dfa.state = Decimal
 		} else if input == ',' {
+			dfa.currentToken = string(input)
 			dfa.state = Comma
 		} else if input == '(' {
+			dfa.currentToken = string(input)
 			dfa.state = LParen
 		} else if input == ')' {
+			dfa.currentToken = string(input)
 			dfa.state = RParen
 		}
 	case Identifier:
@@ -104,7 +109,10 @@ func (dfa *DFA) Transition(input rune) {
 			dfa.Store()
 		}
 	case Register:
-		if unicode.IsDigit(input) || unicode.IsLetter(input) {
+		if input == ',' {
+			dfa.Store()
+			dfa.AddToken(dfa.state.String(), ",")
+		} else if unicode.IsDigit(input) || unicode.IsLetter(input) {
 			dfa.currentToken += string(input)
 		} else {
 			dfa.Store()
