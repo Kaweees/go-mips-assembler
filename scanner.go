@@ -20,11 +20,13 @@ const (
 	Comma
 	LParen
 	RParen
+	LabelDef
+	Comment
 )
 
 // String method to convert the current state to a string.
 func (s State) String() string {
-	return [...]string{"Initial", "Identifier", "DotIdentifier", "Register", "Zero", "Decimal", "Hexadecimal", "Comma", "LParen", "RParen"}[s]
+	return [...]string{"Initial", "Identifier", "DotIdentifier", "Register", "Zero", "Decimal", "Hexadecimal", "Comma", "LParen", "RParen", "LabelDef", "Comment"}[s]
 }
 
 // Represents a token in the scanner.
@@ -56,10 +58,10 @@ func (dfa *DFA) AddToken(tokenType string, tokenValue string) {
 
 // Store the current state of the DFA.
 func (dfa *DFA) Store() {
-	if dfa.state != Initial {
+	if dfa.state != Initial && dfa.state != Comment {
 		dfa.AddToken(dfa.state.String(), dfa.currentToken)
-		dfa.Reset()
 	}
+	dfa.Reset()
 }
 
 // Reset the DFA to its initial state.
@@ -74,10 +76,7 @@ func (dfa *DFA) Transition(input rune) {
 	// fmt.Printf("State: %s, Rune: '%c'\n", dfa.state.String(), input)
 	switch dfa.state {
 	case Initial:
-		if unicode.IsLetter(input) {
-			dfa.currentToken = string(input)
-			dfa.state = Identifier
-		} else if input == '.' {
+		if input == '.' {
 			dfa.state = DotIdentifier
 		} else if input == '$' {
 			dfa.state = Register
@@ -87,17 +86,26 @@ func (dfa *DFA) Transition(input rune) {
 			dfa.currentToken = string(input)
 			dfa.state = Decimal
 		} else if input == ',' {
-			dfa.currentToken = string(input)
-			dfa.state = Comma
+			dfa.AddToken(dfa.state.String(), ",")
+			dfa.Reset()
 		} else if input == '(' {
-			dfa.currentToken = string(input)
-			dfa.state = LParen
+			dfa.AddToken(dfa.state.String(), "(")
+			dfa.Reset()
 		} else if input == ')' {
+			dfa.AddToken(dfa.state.String(), ")")
+			dfa.Reset()
+		} else if input == '#' {
+			dfa.Store()
+			dfa.state = Comment
+		} else if !unicode.IsSpace(input) {
 			dfa.currentToken = string(input)
-			dfa.state = RParen
+			dfa.state = Identifier
 		}
 	case Identifier:
-		if unicode.IsLetter(input) || input == '_' {
+		if input == ':' {
+			dfa.state = LabelDef
+			dfa.Store()
+		} else if !unicode.IsSpace(input) {
 			dfa.currentToken += string(input)
 		} else {
 			dfa.Store()

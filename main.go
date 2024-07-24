@@ -30,7 +30,8 @@ func main() {
 	lineCount := 0
 	byteCount := 0
 	scanner := bufio.NewScanner(file)
-
+	
+	// Scan the file to generate tokens
 	for scanner.Scan() {
 		for _, r := range scanner.Text() {
 			dfa.Transition(r)
@@ -41,6 +42,8 @@ func main() {
 		dfa.Store()
 		lineCount += 1
 	}
+
+	// Parsing the tokens
 	for _, token := range dfa.tokens {
 		fmt.Printf("Token Type: %s, Value: %s\n", token.tokenType, token.tokenValue)
 	}
