@@ -43,3 +43,4 @@ var registerMap = map[string]int{
 
 // Symbol lookup table
 var symbolTable = map[string]int32{}
+

@@ -42,6 +42,7 @@ type DFA struct {
 	currentToken  string
 	currentString rune
 	tokens        []Token
+	totalTokens   [][]Token
 }
 
 // Constructor to initialize memory for the DFA.
@@ -51,6 +52,7 @@ func NewDFA() (*DFA, error) {
 	dfa.currentToken = ""
 	dfa.currentString = 0
 	dfa.tokens = []Token{}
+	dfa.totalTokens = [][]Token{}
 	return dfa, nil
 }
 
@@ -67,12 +69,18 @@ func (dfa *DFA) Store() {
 	dfa.Reset()
 }
 
+func (dfa *DFA) StoreLine() {
+	if len(dfa.tokens) > 0 {
+		dfa.totalTokens = append(dfa.totalTokens, dfa.tokens)
+		dfa.tokens = []Token{}
+	}
+}
+
 // Reset the DFA to its initial state.
 func (dfa *DFA) Reset() {
 	dfa.currentState = Initial
 	dfa.currentToken = ""
 	dfa.currentString = 0
-	// dfa.tokens = []string{}
 }
 
 // Transition the DFA to a new state based on the input.
@@ -99,7 +107,7 @@ func (dfa *DFA) Transition(input rune) {
 		} else if input == ')' {
 			dfa.AddToken(dfa.currentState.String(), ")")
 			dfa.Reset()
-		} else if input == '#' {
+		} else if input == '#' || input == ';' {
 			dfa.Store()
 			dfa.currentState = Comment
 		} else if input == '"' || input == '\'' {
