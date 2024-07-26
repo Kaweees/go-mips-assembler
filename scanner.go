@@ -83,6 +83,7 @@ func (dfa *DFA) Transition(input rune) {
 		if input == '.' {
 			dfa.currentState = DotIdentifier
 		} else if input == '$' {
+			dfa.currentToken = string(input)
 			dfa.currentState = Register
 		} else if input == '0' {
 			dfa.currentState = Zero
