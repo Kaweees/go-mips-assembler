@@ -44,24 +44,22 @@ func main() {
 	}
 
 	// Parsing the tokens
-	for _, token := range dfa.totalTokens {
-		for _, t := range token {
-			if t.tokenType == "LabelDef" {
-				if _, ok := symbolTable[t.tokenValue]; ok {
-					// fmt.Errorf("Duplicate label definition: %s", t.tokenValue)
-				} else {
-					symbolTable[t.tokenValue] = int32(lineCount)
-				}
-			}
-			fmt.Printf("Token Type: %s, Value: %s | ", t.tokenType, t.tokenValue)
-		}
-		fmt.Println()
-		lineCount += 1
+	err = parseTokens(dfa)
+	if err != nil {
+		Log.Error(fmt.Sprintf("Error parsing tokens: %v", err))
+		return
 	}
-	// list := []int{10, 20, 30, 40, 50}
-	// for i := 0; i < len(list); i++ {
-	// 	fmt.Println(list[i])
-	// }
+
+	err = parseTokens(dfa)
+	if err != nil {
+		Log.Error(fmt.Sprintf("Error parsing tokens: %v", err))
+		return
+	}
+
+	list := []int{10, 20, 30, 40, 50}
+	for i := 0; i < len(list); i++ {
+		fmt.Println(list[i])
+	}
 
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)

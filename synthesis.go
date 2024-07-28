@@ -41,6 +41,3 @@ var registerMap = map[string]int{
 	"$gp": 28, "$sp": 29, "$fp": 30, "$ra": 31,
 }
 
-// Symbol lookup table
-var symbolTable = map[string]int32{}
-
