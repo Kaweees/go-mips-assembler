@@ -45,19 +45,38 @@ var registerMap = map[string]int{
 
 // Represents a MIPS assembly instruction
 type AssemblyInstruction struct {
-	instruction string // The instruction name
-	op          uint8  // The opcode of the instruction
-	rs          string // The source register
-	rt          string // The target register
-	rd          string // The destination register
-	shamt       uint8  // The shift amount
-	funct       uint8  // The function code
-	imm         int16  // The immediate value
-	addr        int32  // The address value for jump instructions
+	name  string            // The instruction name
+	rType *RTypeInstruction // The R-type instruction
+	iType *ITypeInstruction // The I-type instruction
+	jType *JTypeInstruction // The J-type instruction
+}
+
+// Represents a R-type instruction
+type RTypeInstruction struct {
+	opcode uint8  // The opcode of the instruction
+	rs     string // The source register
+	rt     string // The target register
+	rd     string // The destination register
+	shamt  uint8  // The shift amount
+	funct  uint8  // The function code
+}
+
+// Represents an I-type instruction
+type ITypeInstruction struct {
+	opcode uint8  // The opcode of the instruction
+	rs     string // The source register
+	rt     string // The target register
+	imm    int16  // The immediate value
+}
+
+// Represents a J-type instruction
+type JTypeInstruction struct {
+	opcode uint8 // The opcode of the instruction
+	addr   int32 // The address value for jump instructions
 }
 
 // Synthesize an R-type instruction
-func synthesizeRType(asm AssemblyInstruction, instruction Instruction) (uint32, error) {
+func synthesizeRType(asm RTypeInstruction, instruction Instruction) (uint32, error) {
 	source, ok := registerMap[asm.rs]
 	if !ok {
 		return 0, fmt.Errorf("invalid source register: %s", asm.rs)
@@ -82,7 +101,7 @@ func synthesizeRType(asm AssemblyInstruction, instruction Instruction) (uint32, 
 }
 
 // Synthesize an I-type instruction
-func synthesizeIType(asm AssemblyInstruction, instruction Instruction) (uint32, error) {
+func synthesizeIType(asm ITypeInstruction, instruction Instruction) (uint32, error) {
 	source, ok := registerMap[asm.rs]
 	if !ok {
 		return 0, fmt.Errorf("invalid source register: %s", asm.rs)
@@ -100,35 +119,35 @@ func synthesizeIType(asm AssemblyInstruction, instruction Instruction) (uint32, 
 }
 
 // Synthesize a J-type instruction
-func synthesizeJType(asm AssemblyInstruction, instruction Instruction) (uint32, error) {
+func synthesizeJType(asm JTypeInstruction, instruction Instruction) (uint32, error) {
 	encodedInstruction := uint32(instruction.opcode) << 26
 	encodedInstruction |= uint32(asm.addr) & 0x3FFFFFF
 	return encodedInstruction, nil
 }
 
 func synthesize(asm AssemblyInstruction) (uint32, error) {
-	instruction, ok := instructionSet[asm.instruction]
+	instruction, ok := instructionSet[asm.name]
 	if !ok {
-		return 0, fmt.Errorf("invalid instruction: %s", asm.instruction)
+		return 0, fmt.Errorf("invalid instruction name: %s", asm.name)
 	}
 
 	switch instruction.format {
 	case R_TYPE:
-		encodedInstruction, err := synthesizeRType(asm, instruction)
+		encodedInstruction, err := synthesizeRType(*asm.rType, instruction)
 		if err != nil {
 			return 0, fmt.Errorf("error synthesizing R-type instruction: %s", err)
 		} else {
 			return encodedInstruction, nil
 		}
 	case I_TYPE:
-		encodedInstruction, err := synthesizeIType(asm, instruction)
+		encodedInstruction, err := synthesizeIType(*asm.iType, instruction)
 		if err != nil {
 			return 0, fmt.Errorf("error synthesizing I-type instruction: %s", err)
 		} else {
 			return encodedInstruction, nil
 		}
 	case J_TYPE:
-		encodedInstruction, err := synthesizeJType(asm, instruction)
+		encodedInstruction, err := synthesizeJType(*asm.jType, instruction)
 		if err != nil {
 			return 0, fmt.Errorf("error synthesizing J-type instruction: %s", err)
 		} else {
