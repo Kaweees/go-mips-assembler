@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 // Represents the instruction types in MIPS
 type InstructionType int
 
@@ -41,3 +43,34 @@ var registerMap = map[string]int{
 	"$gp": 28, "$sp": 29, "$fp": 30, "$ra": 31,
 }
 
+// Represents a MIPS assembly instruction
+type AssemblyInstruction struct {
+	instruction string // The instruction name
+	source      string // The source register
+	target      string // The target register
+	destination string // The destination register
+	shift       uint8  // The shift amount
+	function    uint8  // The function code
+	immediate   int16  // The immediate value
+	address     uint32 // The address value for jump instructions
+}
+
+func synthesize(asm AssemblyInstruction) (uint32, error) {
+	var encodedInstruction = uint32(0)
+	instruction, ok := instructionSet[asm.instruction]
+	if !ok {
+		return 0, fmt.Errorf("invalid instruction: %s", asm.instruction)
+	}
+
+	switch instruction.Format {
+	case R_TYPE:
+		encodedInstruction |= uint32(instruction.Opcode) << 26
+	case I_TYPE:
+		encodedInstruction |= uint32(instruction.Opcode) << 26
+	case J_TYPE:
+		encodedInstruction |= uint32(instruction.Opcode) << 26
+	default:
+		return 0, fmt.Errorf("unknown instruction type: %d", instruction.Format)
+	}
+	return encodedInstruction, nil
+}

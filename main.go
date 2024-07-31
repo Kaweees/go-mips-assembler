@@ -50,12 +50,6 @@ func main() {
 		return
 	}
 
-	err = parseTokens(dfa)
-	if err != nil {
-		Log.Error(fmt.Sprintf("Error parsing tokens: %v", err))
-		return
-	}
-
 	list := []int{10, 20, 30, 40, 50}
 	for i := 0; i < len(list); i++ {
 		fmt.Println(list[i])
@@ -64,5 +58,8 @@ func main() {
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
 	}
+
+	// Synthesize the tokens
+	// err = synthesizeTokens(dfa)
 	fmt.Printf("%d lines, %d bytes\n", lineCount, byteCount)
 }
