@@ -14,8 +14,8 @@ const (
 
 // Represents an instruction in MIPS
 type Instruction struct {
-	Opcode uint8
-	Format InstructionType
+	opcode uint8
+	format InstructionType
 }
 
 // Instruction set
@@ -46,31 +46,95 @@ var registerMap = map[string]int{
 // Represents a MIPS assembly instruction
 type AssemblyInstruction struct {
 	instruction string // The instruction name
-	source      string // The source register
-	target      string // The target register
-	destination string // The destination register
-	shift       uint8  // The shift amount
-	function    uint8  // The function code
-	immediate   int16  // The immediate value
-	address     uint32 // The address value for jump instructions
+	op          uint8  // The opcode of the instruction
+	rs          string // The source register
+	rt          string // The target register
+	rd          string // The destination register
+	shamt       uint8  // The shift amount
+	funct       uint8  // The function code
+	imm         int16  // The immediate value
+	addr        int32  // The address value for jump instructions
+}
+
+// Synthesize an R-type instruction
+func synthesizeRType(asm AssemblyInstruction, instruction Instruction) (uint32, error) {
+	source, ok := registerMap[asm.rs]
+	if !ok {
+		return 0, fmt.Errorf("invalid source register: %s", asm.rs)
+	}
+
+	target, ok := registerMap[asm.rt]
+	if !ok {
+		return 0, fmt.Errorf("invalid target register: %s", asm.rt)
+	}
+
+	destination, ok := registerMap[asm.rd]
+	if !ok {
+		return 0, fmt.Errorf("invalid destination register: %s", asm.rd)
+	}
+	encodedInstruction := uint32(instruction.opcode) << 26
+	encodedInstruction |= uint32(source) << 21
+	encodedInstruction |= uint32(target) << 16
+	encodedInstruction |= uint32(destination) << 11
+	encodedInstruction |= uint32(asm.shamt) << 6
+	encodedInstruction |= uint32(asm.funct)
+	return encodedInstruction, nil
+}
+
+// Synthesize an I-type instruction
+func synthesizeIType(asm AssemblyInstruction, instruction Instruction) (uint32, error) {
+	source, ok := registerMap[asm.rs]
+	if !ok {
+		return 0, fmt.Errorf("invalid source register: %s", asm.rs)
+	}
+
+	target, ok := registerMap[asm.rt]
+	if !ok {
+		return 0, fmt.Errorf("invalid target register: %s", asm.rt)
+	}
+	encodedInstruction := uint32(instruction.opcode) << 26
+	encodedInstruction |= uint32(source) << 21
+	encodedInstruction |= uint32(target) << 16
+	encodedInstruction |= (uint32(asm.imm) & 0xFFFF)
+	return encodedInstruction, nil
+}
+
+// Synthesize a J-type instruction
+func synthesizeJType(asm AssemblyInstruction, instruction Instruction) (uint32, error) {
+	encodedInstruction := uint32(instruction.opcode) << 26
+	encodedInstruction |= uint32(asm.addr) & 0x3FFFFFF
+	return encodedInstruction, nil
 }
 
 func synthesize(asm AssemblyInstruction) (uint32, error) {
-	var encodedInstruction = uint32(0)
 	instruction, ok := instructionSet[asm.instruction]
 	if !ok {
 		return 0, fmt.Errorf("invalid instruction: %s", asm.instruction)
 	}
 
-	switch instruction.Format {
+	switch instruction.format {
 	case R_TYPE:
-		encodedInstruction |= uint32(instruction.Opcode) << 26
+		encodedInstruction, err := synthesizeRType(asm, instruction)
+		if err != nil {
+			return 0, fmt.Errorf("error synthesizing R-type instruction: %s", err)
+		} else {
+			return encodedInstruction, nil
+		}
 	case I_TYPE:
-		encodedInstruction |= uint32(instruction.Opcode) << 26
+		encodedInstruction, err := synthesizeIType(asm, instruction)
+		if err != nil {
+			return 0, fmt.Errorf("error synthesizing I-type instruction: %s", err)
+		} else {
+			return encodedInstruction, nil
+		}
 	case J_TYPE:
-		encodedInstruction |= uint32(instruction.Opcode) << 26
+		encodedInstruction, err := synthesizeJType(asm, instruction)
+		if err != nil {
+			return 0, fmt.Errorf("error synthesizing J-type instruction: %s", err)
+		} else {
+			return encodedInstruction, nil
+		}
 	default:
-		return 0, fmt.Errorf("unknown instruction type: %d", instruction.Format)
+		return 0, fmt.Errorf("unknown instruction type: %d", instruction.format)
 	}
-	return encodedInstruction, nil
 }
