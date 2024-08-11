@@ -14,21 +14,24 @@ const (
 
 // Represents an instruction in MIPS
 type Instruction struct {
+	format InstructionType // The format of the instruction
 	opcode uint8
-	format InstructionType
+	funct  uint8
 }
 
 // Instruction set
 var instructionSet = map[string]Instruction{
-	"add": {0b100000, R_TYPE},
-	"sub": {0b100010, R_TYPE},
-	"and": {0b100100, R_TYPE},
-	"or":  {0b100101, R_TYPE},
-	"xor": {0b100110, R_TYPE},
-	"nor": {0b100111, R_TYPE},
-	"slt": {0b101010, R_TYPE},
-	"j":   {0b000010, J_TYPE},
-	"jal": {0b000011, J_TYPE},
+	"add":  {R_TYPE, 0b000000, 0b100000},
+	"addi": {I_TYPE, 0b001000, 0},
+	"and":  {R_TYPE, 0b000000, 0b100100},
+	"andi": {I_TYPE, 0b001100, 0},
+	"nor": {R_TYPE, 0b000000, 0b100111},
+	"or":  {R_TYPE, 0b000000, 0b100101},
+	"ori": {I_TYPE, 0b001101, 0},
+	"sub": {R_TYPE, 0b000000, 0b100010},
+	"xor": {R_TYPE, 0b000000, 0b100110},
+	"xori": {I_TYPE, 0b001110, 0},
+	"syscall": {R_TYPE, 0b000000, 0b001100},
 }
 
 // Register map

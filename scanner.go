@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bufio"
+	"os"
 	"strings"
 	"unicode"
 )
@@ -169,4 +171,19 @@ func (dfa *DFA) Transition(input rune) {
 			dfa.Store()
 		}
 	}
+}
+
+func scanFile(file *os.File, dfa *DFA) error {
+	scanner := bufio.NewScanner(file)
+	// Scan the file to generate tokens
+	for scanner.Scan() {
+		for _, r := range scanner.Text() {
+			dfa.Transition(r)
+			// fmt.Print(i, r)
+			// fmt.Printf("Index: %d, Rune: %c\n", i, r)
+		}
+		dfa.Store()
+		dfa.StoreLine()
+	}
+	return nil
 }

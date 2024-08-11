@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"log"
 	"os"
@@ -23,43 +22,36 @@ func main() {
 	// Initialize the dfa
 	dfa, err = NewDFA()
 	if err != nil {
-		Log.Error(fmt.Sprintf("Error initializing the request handler: %v", err))
+		Log.Error(fmt.Sprintf("Error initializing the DFA: %v", err))
 		return
 	}
 
-	lineCount := 0
-	byteCount := 0
-	scanner := bufio.NewScanner(file)
-
-	// Scan the file to generate tokens
-	for scanner.Scan() {
-		for _, r := range scanner.Text() {
-			dfa.Transition(r)
-			// fmt.Print(i, r)
-			// fmt.Printf("Index: %d, Rune: %c\n", i, r)
-			byteCount += 1
-		}
-		dfa.Store()
-		dfa.StoreLine()
+	// Scan the file
+	Log.Info(fmt.Sprintf("Scanner of %s initialized", file.Name()))
+	err = scanFile(file, dfa)
+	if err != nil {
+		Log.Error(fmt.Sprintf("Error scanning file: %v", err))
+		return
 	}
 
 	// Parsing the tokens
 	err = parseTokens(dfa)
+	Log.Info(fmt.Sprintf("Parsing tokens of %s initalized", file.Name()))
 	if err != nil {
 		Log.Error(fmt.Sprintf("Error parsing tokens: %v", err))
 		return
 	}
 
-	list := []int{10, 20, 30, 40, 50}
-	for i := 0; i < len(list); i++ {
-		fmt.Println(list[i])
-	}
+	// list := []int{10, 20, 30, 40, 50}
+	// for i := 0; i < len(list); i++ {
+	// 	fmt.Println(list[i])
+	// }
 
-	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
-	}
+	// if err := scanner.Err(); err != nil {
+	// 	log.Fatal(err)
+	// }
 
 	// Synthesize the tokens
 	// err = synthesizeTokens(dfa)
-	fmt.Printf("%d lines, %d bytes\n", lineCount, byteCount)
+	// fmt.Printf("%d lines, %d bytes\n", lineCount, byteCount)
 }

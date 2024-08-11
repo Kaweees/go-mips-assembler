@@ -9,4 +9,4 @@ main:
     syscall         # Make the syscall
 
     li $v0, 10      # Load immediate value 10 into $v0 (exit syscall)
-    syscall         # Make the syscall to exit
+    syscall         # Make the syscall to exit the program
