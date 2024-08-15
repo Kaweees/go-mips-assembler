@@ -37,6 +37,11 @@ func initalizeLogger() {
 		log.SetLevel(logrus.InfoLevel)
 	}
 
+	// Set the log format to text
+	log.SetFormatter(&logrus.TextFormatter{
+		FullTimestamp: true,
+	})
+
 	// Set the logger instance to the package-level variable
 	Log = log
 
