@@ -7,13 +7,15 @@ var symbolTable = map[string]int32{}
 
 func parseTokens(dfa *DFA) error {
 	lineCount := 0
-	for _, token := range dfa.totalTokens {
-		for _, t := range token {
-			if t.tokenType == "DotIdentifier" {
-				if _, ok := symbolTable[t.tokenValue]; ok {
-					return fmt.Errorf("duplicate label definition: %s", t.tokenValue)
+	for _, tokenList := range dfa.totalTokens {
+		// fmt.Println("Line: ", lineCount)
+		fmt.Println("Tokens: ", tokenList)
+		for _, token := range tokenList {
+			if token.tokenType == "DotIdentifier" {
+				if _, ok := symbolTable[token.tokenValue]; ok {
+					return fmt.Errorf("duplicate label definition: %s", token.tokenValue)
 				} else {
-					symbolTable[t.tokenValue] = int32(lineCount)
+					symbolTable[token.tokenValue] = int32(lineCount)
 				}
 			}
 		}
